@@ -17,37 +17,36 @@ def solve():
             break
 
         grid = []
-        start_r = -1
-        start_c = -1
+        start_r, start_c = -1, -1
 
         for i in range(R):
-            row = input_data[idx]
+            row = list(input_data[idx])
             idx += 1
             grid.append(row)
-            if "*" in row:
-                start_r = i
-                start_c = row.index("*")
+            if start_r == -1:
+                for j in range(C):
+                    if row[j] == "*":
+                        start_r = i
+                        start_c = j
 
-        visited = [[False] * C for _ in range(R)]
-        visited[start_r][start_c] = True
-
-        queue = deque([(start_r, start_c)])
+        q = deque([(start_r, start_c)])
+        grid[start_r][start_c] = "#"
         count = 0
 
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        dr = [-1, 1, 0, 0]
+        dc = [0, 0, -1, 1]
 
-        while queue:
-            r, c = queue.popleft()
+        while q:
+            r, c = q.popleft()
             count += 1
 
-            for dr, dc in directions:
-                nr = r + dr
-                nc = c + dc
+            for i in range(4):
+                nr = r + dr[i]
+                nc = c + dc[i]
 
-                if 0 <= nr < R and 0 <= nc < C:  # noqa: SIM102
-                    if not visited[nr][nc] and grid[nr][nc] == ".":
-                        visited[nr][nc] = True
-                        queue.append((nr, nc))
+                if 0 <= nr < R and 0 <= nc < C and grid[nr][nc] == ".":
+                    grid[nr][nc] = "#"
+                    q.append((nr, nc))
 
         print(count)
 

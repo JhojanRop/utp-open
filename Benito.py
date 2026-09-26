@@ -1,5 +1,4 @@
 import sys
-from collections import deque
 
 
 def solve():
@@ -8,6 +7,8 @@ def solve():
         return
 
     idx = 0
+    out = []
+
     while idx < len(input_data):
         R = int(input_data[idx])
         C = int(input_data[idx + 1])
@@ -16,39 +17,47 @@ def solve():
         if R == 0 and C == 0:
             break
 
-        grid = []
-        start_r, start_c = -1, -1
+        grid_chars = "".join(input_data[idx : idx + R])
+        idx += R
 
-        for i in range(R):
-            row = list(input_data[idx])
-            idx += 1
-            grid.append(row)
-            if start_r == -1:
-                for j in range(C):
-                    if row[j] == "*":
-                        start_r = i
-                        start_c = j
+        grid = bytearray(grid_chars, "ascii")
+        start_pos = grid.find(b"*")
 
-        q = deque([(start_r, start_c)])
-        grid[start_r][start_c] = "#"
+        stack = [start_pos]
+        grid[start_pos] = 35
         count = 0
 
-        dr = [-1, 1, 0, 0]
-        dc = [0, 0, -1, 1]
-
-        while q:
-            r, c = q.popleft()
+        while stack:
+            pos = stack.pop()
             count += 1
 
-            for i in range(4):
-                nr = r + dr[i]
-                nc = c + dc[i]
+            r = pos // C
+            c = pos % C
 
-                if 0 <= nr < R and 0 <= nc < C and grid[nr][nc] == ".":
-                    grid[nr][nc] = "#"
-                    q.append((nr, nc))
+            if r > 0:
+                npos = pos - C
+                if grid[npos] == 46:
+                    grid[npos] = 35
+                    stack.append(npos)
+            if r < R - 1:
+                npos = pos + C
+                if grid[npos] == 46:
+                    grid[npos] = 35
+                    stack.append(npos)
+            if c > 0:
+                npos = pos - 1
+                if grid[npos] == 46:
+                    grid[npos] = 35
+                    stack.append(npos)
+            if c < C - 1:
+                npos = pos + 1
+                if grid[npos] == 46:
+                    grid[npos] = 35
+                    stack.append(npos)
 
-        print(count)
+        out.append(str(count))
+
+    sys.stdout.write("\n".join(out) + "\n")
 
 
 if __name__ == "__main__":

@@ -2,32 +2,57 @@ import sys
 import array
 
 def main():
+    input_stream = sys.stdin.buffer
 
     if sys.stdin.isatty():
-        print("Ingresa N en la primera línea, y luego los padres en la segunda línea:")
+        print("Ingresa N y luego los N-1 padres (se procesa al completar los datos):")
 
-    input_stream = sys.stdin.buffer
-    first_line = input_stream.readline()
-    while first_line and not first_line.strip():
-        first_line = input_stream.readline()
-
-    if not first_line:
-        return
-
-    N = int(first_line)
-
+    CHUNK_SIZE = 1024 * 1024
+    rem = b''
+    N = None
     P = array.array('i', [0, 0])
 
-    for line in input_stream:
-        parts = line.split()
-        if not parts:
+    while True:
+        chunk = input_stream.read(CHUNK_SIZE)
+        if not chunk:
+            if rem:
+                for token in rem.split():
+                    val = int(token)
+                    if N is None:
+                        N = val
+                    else:
+                        P.append(val)
+            break
+
+        data = rem + chunk
+        last_ws = max(data.rfind(b' '), data.rfind(b'\n'), data.rfind(b'\r'), data.rfind(b'\t'))
+        if last_ws == -1:
+            rem = data
             continue
-        P.extend(map(int, parts))
+
+        rem = data[last_ws + 1:]
+        tokens = data[:last_ws].split()
+        if not tokens:
+            continue
+
+        idx = 0
+        if N is None:
+            N = int(tokens[0])
+            idx = 1
+
+        P.extend(map(int, tokens[idx:]))
         if len(P) >= N + 1:
             break
 
+    if N is None or N < 2:
+        return
+
     if len(P) > N + 1:
         del P[N + 1:]
+    elif len(P) < N + 1:
+        if sys.stdin.isatty():
+            print(f"Error: se esperaban {N - 1} padres para N = {N}, pero solo se recibieron {len(P) - 2}.", file=sys.stderr)
+        return
 
     sz = array.array('i', [1]) * (N + 1)
     h1 = array.array('i', [-1]) * (N + 1)
